@@ -1,0 +1,63 @@
+//--------    FILE: alpha.bhv   -------------
+
+initialize   DEPLOY = false
+initialize   RETURN = false
+initialize LOITER_REGION = west
+
+
+//----------------------------------------------
+Behavior = BHV_Loiter
+{
+  name      = loiter_mission
+  pwt       = 100
+  condition = DEPLOY = true
+  condition = RETURN = false
+
+  // Loiter specific parameters
+  polygon   = format=radial, x=100, y=-75, radius=30, pts=8, snap=1, label=BravoLoiter
+  speed     = 2.5
+  clockwise = false
+
+  // Duration and Endflags
+  duration  = 150
+  endflag   = RETURN = true
+}
+
+//----------------------------------------------
+Behavior=BHV_Waypoint
+{
+  name      = waypt_return
+  pwt       = 100
+  condition = RETURN = true
+  condition = DEPLOY = true
+  perpetual = true
+  
+  updates   = RETURN_UPDATE
+  endflag   = RETURN = false
+  endflag   = DEPLOY = false
+  endflag   = MISSION = complete
+	
+           speed = 2.0
+  capture_radius = 2.0
+     slip_radius = 8.0
+          points = 0,-20
+          // points = 0,0
+ }
+
+//----------------------------------------------
+Behavior=BHV_ConstantSpeed
+{
+  name      = const_speed
+  pwt       = 200
+  condition = SPD=true
+  condition = DEPLOY = true
+  perpetual = true
+  updates   = SPEED_UPDATE
+  endflag   = SPD = false
+
+           speed = 0.5
+		    duration = 10
+	duration_reset = CONST_SPD_RESET=true
+	
+}
+
