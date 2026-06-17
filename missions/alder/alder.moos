@@ -20,7 +20,9 @@ ProcessConfig = ANTLER
   Run = pMarineViewer	@ NewConsole = false
   Run = uProcessWatch @ NewConsole = false
   Run = pHelmIvP      @ NewConsole = false
-  //Run = pOdometry     @ NewConsole = false
+  Run = pOdometry     @ NewConsole = false
+  Run = pLogger       @ NewConsole = false
+  Run = uXMS          @ NewConsole = true
 }
 
 //------------------------------------------
@@ -149,4 +151,48 @@ ProcessConfig = pNodeReporter
   CommsTick	= 2
 
   vessel_type = kayak
+}
+
+//------------------------------------------
+// pLogger config block
+
+ProcessConfig = pLogger
+{
+  AppTick   = 8
+  CommsTick = 8
+
+  AsyncLog = true
+  WildCardLogging = true
+}
+
+// pOdometry config block
+
+ProcessConfig = pOdometry
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  // Highly recommended from Method 2 debugging to capture terminal output
+  app_logging = log 
+}
+
+
+// uXMS config block
+ProcessConfig = uXMS
+{
+  AppTick = 4
+  CommsTick = 4
+
+  // Variables you want to monitor
+  VAR = DB_CLIENTS, DB_TIME, DB_UPTIME, ODOMETRY_DIST
+  
+  // Optional: If you created intermediate variables for debugging
+  // VAR = LEG_DIST 
+
+  // Display configurations
+  DISPLAY_SOURCE = true
+  DISPLAY_TIME   = true
+  DISPLAY_COMMUNITY = true
+  
+   
 }
