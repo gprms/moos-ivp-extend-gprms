@@ -86,6 +86,11 @@ ProcessConfig = uSimMarineV22
   turn_rate     = 95
   thrust_map    = 0:0, 20:1, 40:2, 60:3, 80:4, 100:5
 	turn_spd_loss = 0.4
+
+  buoyancy_rate        = 0.15
+  max_depth_rate       = 5
+  max_depth_rate_speed = 2.0
+  default_water_depth  = 400
 }
 
 //------------------------------------------
@@ -99,6 +104,7 @@ ProcessConfig = pHelmIvP
   behaviors  = bravo.bhv
   domain     = course:0:359:360
   domain     = speed:0:4:41
+  domain     = depth:0:100:101
 }
 
 //------------------------------------------
@@ -110,7 +116,23 @@ ProcessConfig = pMarinePIDV22
   CommsTick  = 20
 
   verbose       = true
-  depth_control = false
+  //depth_control = false
+  depth_control = true
+
+  //Pitch PID controller
+  pitch_pid_kp                   = 1.5
+  pitch_pid_kd                   = 0.3
+  pitch_pid_ki                   = 0.004
+  pitch_pid_integral_limit       = 0
+
+  //ZPID controller
+  z_to_pitch_pid_kp              = 0.12
+  z_to_pitch_pid_kd              = 0.1
+  z_to_pitch_pid_ki              = 0.004
+  z_to_pitch_pid_integral_limit  = 0.05
+
+  maxpitch     = 15
+  maxelevator  = 13
 
   // SIM_INSTABILITY = 20
 
@@ -224,7 +246,8 @@ ProcessConfig = pNodeReporter
   AppTick    = 2
   CommsTick	 = 2
 
-  platform_type   = kayak
+  platform_type = UUV
+  // platform_type   = kayak
   platform_color  = yellow
   platform_length = 4
 }

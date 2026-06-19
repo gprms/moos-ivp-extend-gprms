@@ -56,6 +56,42 @@ Behavior = BHV_Loiter
   endflag   = LOITER_REGION = west 
 }
 
+//----------------------------------------------
+// West Depth Behavior (30 meters)
+Behavior = BHV_ConstantDepth
+{
+  name      = const_dep_west
+  pwt       = 100
+  
+  // Tying conditions to the West Loiter behavior
+  condition = DEPLOY = true
+  condition = RETURN = false
+  condition = LOITER_REGION = west
+  
+  // Mandatory setting for ConstantDepth to prevent immediate completion
+  duration  = no-time-limit
+  
+  depth     = 30
+}
+
+//----------------------------------------------
+// East Depth Behavior (10 meters)
+Behavior = BHV_ConstantDepth
+{
+  name      = const_dep_east
+  pwt       = 100
+  
+  // Tying conditions to the East Loiter behavior
+  condition = DEPLOY = true
+  condition = RETURN = false
+  condition = LOITER_REGION = east
+  
+  // Mandatory setting for ConstantDepth to prevent immediate completion
+  duration  = no-time-limit
+  
+  depth     = 10
+} 
+
 
 //----------------------------------------------
 Behavior=BHV_Waypoint

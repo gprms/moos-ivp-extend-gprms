@@ -3,7 +3,37 @@
 initialize   DEPLOY = false
 initialize   RETURN = false
 initialize LOITER_REGION = west
+initialize SURFACING = false
 
+//----------------------------------------------
+// Timer to trigger surfacing every 200 seconds
+Behavior = BHV_Timer
+{
+  name      = timer_submerged
+  condition = DEPLOY = true
+  condition = RETURN = false
+  condition = SURFACING = false
+  
+  duration  = 200
+  duration_idle_decay = false
+  perpetual = true
+  
+  endflag   = SURFACING = true
+}
+
+//----------------------------------------------
+// Timer to wait at the surface for 60 seconds
+Behavior = BHV_Timer
+{
+  name      = timer_surfaced
+  condition = SURFACING = true
+  
+  duration  = 60
+  duration_idle_decay = false
+  perpetual = true
+  
+  endflag   = SURFACING = false
+}
 
 //----------------------------------------------
 Behavior = BHV_Loiter
@@ -15,6 +45,7 @@ Behavior = BHV_Loiter
   
   // Mutual exclusivity condition
   condition = LOITER_REGION = west 
+  condition = SURFACING = false
 
   polygon   = format=radial, x=100, y=-75, radius=30, pts=8, snap=1, label=BravoLoiterWest
   speed     = 2.5
@@ -43,6 +74,7 @@ Behavior = BHV_Loiter
   
   // Mutual exclusivity condition
   condition = LOITER_REGION = east 
+  condition = SURFACING = false
 
   polygon   = format=radial, x=160, y=-50, radius=20, pts=8, snap=1, label=BravoLoiterEast
   speed     = 2.5
@@ -55,6 +87,44 @@ Behavior = BHV_Loiter
   // Trigger the West loiter behavior upon completion
   endflag   = LOITER_REGION = west 
 }
+
+//----------------------------------------------
+// West Depth Behavior (30 meters)
+Behavior = BHV_ConstantDepth
+{
+  name      = const_dep_west
+  pwt       = 100
+  
+  // Tying conditions to the West Loiter behavior
+  condition = DEPLOY = true
+  condition = RETURN = false
+  condition = LOITER_REGION = west
+  condition = SURFACING = false
+
+  // Mandatory setting for ConstantDepth to prevent immediate completion
+  duration  = no-time-limit
+  
+  depth     = 30
+}
+
+//----------------------------------------------
+// East Depth Behavior (10 meters)
+Behavior = BHV_ConstantDepth
+{
+  name      = const_dep_east
+  pwt       = 100
+  
+  // Tying conditions to the East Loiter behavior
+  condition = DEPLOY = true
+  condition = RETURN = false
+  condition = LOITER_REGION = east
+  condition = SURFACING = false
+  
+  // Mandatory setting for ConstantDepth to prevent immediate completion
+  duration  = no-time-limit
+  
+  depth     = 10
+} 
 
 
 //----------------------------------------------

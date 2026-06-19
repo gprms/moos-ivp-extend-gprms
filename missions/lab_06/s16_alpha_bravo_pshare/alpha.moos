@@ -1,11 +1,11 @@
 //-------------------------------------------------
 // NAME: gprms
-// FILE: bravo.moos
+// FILE: alpha.moos
 //-------------------------------------------------
 
 ServerHost   = localhost
-ServerPort   = 9000
-Community    = bravo
+ServerPort   = 9001
+Community    = alpha
 MOOSTimeWarp = 1
 
 // Forest Lake
@@ -23,14 +23,11 @@ ProcessConfig = ANTLER
   MSBetweenLaunches = 200
 
   Run = MOOSDB        @ NewConsole = false
-  Run = pLogger       @ NewConsole = false
-  Run = uSimMarineV22 @ NewConsole = false
-  Run = pMarinePIDV22 @ NewConsole = false
+  Run = uSimMarineV22    @ NewConsole = false
+  Run = pNodeReporter @ NewConsole = false
+  Run = pMarinePIDV22    @ NewConsole = false
   Run = pHelmIvP      @ NewConsole = false
-  Run = pMarineViewer	@ NewConsole = false
-  Run = uProcessWatch	@ NewConsole = false
-  Run = pNodeReporter	@ NewConsole = false
-  Run = pRealm	      @ NewConsole = false
+  Run = pShare        @ NewConsole = false 
 }
 
 //------------------------------------------
@@ -96,7 +93,7 @@ ProcessConfig = pHelmIvP
   AppTick    = 4
   CommsTick  = 4
 
-  behaviors  = bravo.bhv
+  behaviors  = alpha.bhv
   domain     = course:0:359:360
   domain     = speed:0:4:41
 }
@@ -142,7 +139,7 @@ ProcessConfig = pMarineViewer
 {
   AppTick    = 4
   CommsTick  = 4
-  scope = NAV_X, NAV_Y
+
   tiff_file            = forrest19.tif
 	//tiff_file            = MIT_SP.tif
 
@@ -174,7 +171,6 @@ ProcessConfig = pMarineViewer
   // datum_size     = 18
   // gui_size = small
 
-  
   // left_context[survey-point] = DEPLOY=true
   // left_context[survey-point] = MOOS_MANUAL_OVERRIDE=false
   // left_context[survey-point] = RETURN=false
@@ -197,18 +193,6 @@ ProcessConfig = pMarineViewer
   button_two = RETURN # RETURN=true
   button_three = SLOWER # WPT_UPDATE=speed=1.5
   button_four = FASTER # WPT_UPDATE=speed=3.5
-  // left_context[view_point]  = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=hello
-  // left_context[view_poly]  = VIEW_POLYGON = format=radial,x=$(XPOS),y=$(YPOS),radius=10,pts=8,edge_size=1,label=mypoly
-  
-  // Your previous Assignment 1 context
-  // left_context[return] = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=return_point
-  // left_context[return] = RETURN_UPDATE = point=$(XPOS),$(YPOS)
-  
-
-  // Add this NEW context for Assignment 2
-  // left_context[return_now] = RETURN_UPDATE = point=$(XPOS),$(YPOS)
-  // left_context[return_now] = RETURN = true
-  // left_context[return_now] = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=return_now_point
 
   action  = MENU_KEY=deploy # DEPLOY = true # RETURN = false
   action+ = MENU_KEY=deploy # MOOS_MANUAL_OVERRIDE=false
@@ -229,3 +213,19 @@ ProcessConfig = pNodeReporter
   platform_length = 4
 }
 
+//------------------------------------------
+// pShare config block
+ProcessConfig = pShare
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  // Port this pShare will listen on
+  input  = route = localhost:9201
+
+  // Send telemetry and visual cues back to the shoreside
+  output = src_name=NODE_REPORT_LOCAL, dest_name=NODE_REPORT, route=localhost:9200
+  output = src_name=VIEW_POLYGON, route=localhost:9200
+  output = src_name=VIEW_SEGLIST, route=localhost:9200
+  output = src_name=VIEW_POINT, route=localhost:9200
+}

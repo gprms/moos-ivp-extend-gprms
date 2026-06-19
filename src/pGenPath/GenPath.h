@@ -1,50 +1,45 @@
 /************************************************************/
 /*    NAME: gprms                                              */
 /*    ORGN: MIT, Cambridge MA                               */
-/*    FILE: Odometry.h                                          */
-/*    DATE: June 16th, 2026                             */
+/*    FILE: GenPath.h                                          */
+/*    DATE: December 29th, 1963                             */
 /************************************************************/
-#ifndef Odometry_HEADER
-#define Odometry_HEADER
+// Add these includes at the top
 
-#include <list> // Include at the top of the file
+#ifndef GenPath_HEADER
+#define GenPath_HEADER
+
+#include "XYPoint.h"
+#include "XYSegList.h"
+#include <vector>
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 
-class Odometry : public AppCastingMOOSApp
+class GenPath : public AppCastingMOOSApp
 {
  public:
-   Odometry();
-   ~Odometry();
+   GenPath();
+   ~GenPath();
 
  protected: // Standard MOOSApp functions to overload  
    bool OnNewMail(MOOSMSG_LIST &NewMail);
    bool Iterate();
    bool OnConnectToServer();
    bool OnStartUp();
- 
+
  protected: // Standard AppCastingMOOSApp function to overload 
    bool buildReport();
 
  protected:
    void registerVariables();
 
+   // Add these to your class definition under 'protected:'
+  protected: 
+    std::vector<XYPoint> m_nav_points;
+    bool m_receive_complete;
+    
  private: // Configuration variables
 
  private: // State variables
-    bool   m_first_reading;
-    double m_current_x;
-    double m_current_y;
-    double m_previous_x;
-    double m_previous_y;
-    double m_total_distance;
-
-    double m_depth_thresh;
-    double m_dist_at_depth;
-    double m_current_depth;
-
- protected: // private/protected member variables  
-    std::list<double> m_nav_x_list;
-    std::list<double> m_nav_y_list;
 };
 
 #endif 

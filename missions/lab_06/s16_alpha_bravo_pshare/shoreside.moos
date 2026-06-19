@@ -1,11 +1,11 @@
 //-------------------------------------------------
 // NAME: gprms
-// FILE: bravo.moos
+// FILE: shoreside.moos
 //-------------------------------------------------
 
 ServerHost   = localhost
 ServerPort   = 9000
-Community    = bravo
+Community    = shoreside
 MOOSTimeWarp = 1
 
 // Forest Lake
@@ -17,20 +17,13 @@ LongOrigin = -70.330400
 // LongOrigin = -71.087589
 
 //------------------------------------------
-// Antler configuration  block
 ProcessConfig = ANTLER
 {
   MSBetweenLaunches = 200
 
   Run = MOOSDB        @ NewConsole = false
-  Run = pLogger       @ NewConsole = false
-  Run = uSimMarineV22 @ NewConsole = false
-  Run = pMarinePIDV22 @ NewConsole = false
-  Run = pHelmIvP      @ NewConsole = false
-  Run = pMarineViewer	@ NewConsole = false
-  Run = uProcessWatch	@ NewConsole = false
-  Run = pNodeReporter	@ NewConsole = false
-  Run = pRealm	      @ NewConsole = false
+  Run = pMarineViewer @ NewConsole = false
+  Run = pShare        @ NewConsole = false 
 }
 
 //------------------------------------------
@@ -96,7 +89,7 @@ ProcessConfig = pHelmIvP
   AppTick    = 4
   CommsTick  = 4
 
-  behaviors  = bravo.bhv
+  behaviors  = alpha.bhv
   domain     = course:0:359:360
   domain     = speed:0:4:41
 }
@@ -142,7 +135,7 @@ ProcessConfig = pMarineViewer
 {
   AppTick    = 4
   CommsTick  = 4
-  scope = NAV_X, NAV_Y
+
   tiff_file            = forrest19.tif
 	//tiff_file            = MIT_SP.tif
 
@@ -174,7 +167,6 @@ ProcessConfig = pMarineViewer
   // datum_size     = 18
   // gui_size = small
 
-  
   // left_context[survey-point] = DEPLOY=true
   // left_context[survey-point] = MOOS_MANUAL_OVERRIDE=false
   // left_context[survey-point] = RETURN=false
@@ -197,23 +189,12 @@ ProcessConfig = pMarineViewer
   button_two = RETURN # RETURN=true
   button_three = SLOWER # WPT_UPDATE=speed=1.5
   button_four = FASTER # WPT_UPDATE=speed=3.5
-  // left_context[view_point]  = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=hello
-  // left_context[view_poly]  = VIEW_POLYGON = format=radial,x=$(XPOS),y=$(YPOS),radius=10,pts=8,edge_size=1,label=mypoly
-  
-  // Your previous Assignment 1 context
-  // left_context[return] = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=return_point
-  // left_context[return] = RETURN_UPDATE = point=$(XPOS),$(YPOS)
-  
 
-  // Add this NEW context for Assignment 2
-  // left_context[return_now] = RETURN_UPDATE = point=$(XPOS),$(YPOS)
-  // left_context[return_now] = RETURN = true
-  // left_context[return_now] = VIEW_POINT = x=$(XPOS),y=$(YPOS),label=return_now_point
+  action = menu_key=Deploy-Alpha # DEPLOY_ALPHA=true # OVERRIDE_ALPHA=false
+  action = menu_key=Deploy-Bravo # DEPLOY_BRAVO=true # OVERRIDE_BRAVO=false
+  action = menu_key=Return-Alpha # RETURN_ALPHA=true
+  action = menu_key=Return-Bravo # RETURN_BRAVO=true
 
-  action  = MENU_KEY=deploy # DEPLOY = true # RETURN = false
-  action+ = MENU_KEY=deploy # MOOS_MANUAL_OVERRIDE=false
-  action  = RETURN=true
-  action  = UPDATES_RETURN=speed=1.4
 }
 
 //------------------------------------------
@@ -229,3 +210,35 @@ ProcessConfig = pNodeReporter
   platform_length = 4
 }
 
+//------------------------------------------
+// pShare config block
+ProcessConfig = pShare
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  // Port this pShare will listen on
+  input  = route = localhost:9200
+
+  // Send GUI button commands to the vehicle
+  output = src_name=DEPLOY, route=localhost:9201
+  output = src_name=RETURN, route=localhost:9201
+  output = src_name=MOOS_MANUAL_OVERRIDE, route=localhost:9201
+
+  // 1. Broadcast commands to ALL vehicles (for the GUI buttons)
+  output = src_name=DEPLOY, route=localhost:9201
+  output = src_name=DEPLOY, route=localhost:9202
+  output = src_name=RETURN, route=localhost:9201
+  output = src_name=RETURN, route=localhost:9202
+  output = src_name=MOOS_MANUAL_OVERRIDE, route=localhost:9201
+  output = src_name=MOOS_MANUAL_OVERRIDE, route=localhost:9202
+
+  // 2. Targeted commands for isolated control (renamed in transit via dest_name)
+  output = src_name=DEPLOY_ALPHA, dest_name=DEPLOY, route=localhost:9201
+  output = src_name=DEPLOY_BRAVO, dest_name=DEPLOY, route=localhost:9202
+  output = src_name=RETURN_ALPHA, dest_name=RETURN, route=localhost:9201
+  output = src_name=RETURN_BRAVO, dest_name=RETURN, route=localhost:9202
+  output = src_name=OVERRIDE_ALPHA, dest_name=MOOS_MANUAL_OVERRIDE, route=localhost:9201
+  output = src_name=OVERRIDE_BRAVO, dest_name=MOOS_MANUAL_OVERRIDE, route=localhost:9202
+
+}

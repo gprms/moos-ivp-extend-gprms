@@ -24,6 +24,10 @@ Odometry::Odometry()
   m_previous_x = 0.0;
   m_previous_y = 0.0;
   m_total_distance = 0.0;
+  
+  m_depth_thresh   = 0.0;
+  m_dist_at_depth  = 0.0;
+  m_current_depth  = 0.0;
 }
 
 //---------------------------------------------------------
@@ -55,14 +59,16 @@ bool Odometry::OnNewMail(MOOSMSG_LIST &NewMail)
     bool   mstr  = msg.IsString();
 #endif
 
-if (key == "NAV_X" && msg.IsDouble()) {
-    m_nav_x_list.push_back(msg.GetDouble());
-  }
-  else if (key == "NAV_Y" && msg.IsDouble()) {
-      m_nav_y_list.push_back(msg.GetDouble());
-  }
-    else if(key != "APPCAST_REQ") // handled by AppCastingMOOSApp
-        reportRunWarning("Unhandled Mail: " + key);
+    if (key == "NAV_X" && msg.IsDouble()) {
+        m_nav_x_list.push_back(msg.GetDouble());
+      }
+      else if (key == "NAV_Y" && msg.IsDouble()) {
+          m_nav_y_list.push_back(msg.GetDouble());
+      }
+        // Add this new block to handle incoming depth
+        else if(key == "NAV_DEPTH" && msg.IsDouble()) {
+          m_current_depth = msg.GetDouble();
+        }
 }
 	
    return(true);
@@ -108,14 +114,20 @@ bool Odometry::Iterate()
           m_total_distance += leg_dist;
           
           cout << "ODOMETRY_DIST: " << m_total_distance << endl; // Added line
+
+            // Accumulate distance traveled while below depth threshold
+            if (m_current_depth > m_depth_thresh) {
+              m_dist_at_depth += leg_dist;
+            }
           
           m_previous_x = m_current_x;
           m_previous_y = m_current_y;
       }
   }
 
-  // Publish the updated distance to the MOOSDB
-  Notify("ODOMETRY_DIST", m_total_distance);
+        // Publish the standard distance and the new conditional distance
+        Notify("ODOMETRY_DIST", m_total_distance);
+        Notify("ODOMETRY_DIST_AT_DEPTH", m_dist_at_depth);
 
   AppCastingMOOSApp::PostReport();
   return(true);
@@ -142,12 +154,11 @@ bool Odometry::OnStartUp()
     string value = line;
 
     bool handled = false;
-    if(param == "foo") {
-      handled = true;
+    // Add this new block to read the depth threshold
+    if(param == "depth_thresh") {
+      m_depth_thresh = atof(value.c_str());
     }
-    else if(param == "bar") {
-      handled = true;
-    }
+    // ... handle other parameters if any
 
     if(!handled)
       reportUnhandledConfigWarning(orig);
@@ -167,6 +178,9 @@ void Odometry::registerVariables()
   // Register("FOOBAR", 0);
   Register("NAV_X", 0);
   Register("NAV_Y", 0);
+
+  // Add this new registration
+  Register("NAV_DEPTH", 0); 
 }
 
 
@@ -176,9 +190,13 @@ void Odometry::registerVariables()
 bool Odometry::buildReport() 
 {
   m_msgs << "============================================" << endl;
-  m_msgs << "File: Odometry.cpp                          " << endl;
+  m_msgs << "Odometry Status Report                           " << endl;
   m_msgs << "============================================" << endl;
-  m_msgs << "Total Distance Traveled: " << m_total_distance << " meters" << endl;
+  m_msgs << "Total Odometry:     " << m_total_distance << " meters\n";
+  m_msgs << "Odometry at Depth:  " << m_dist_at_depth << " meters\n";
+  m_msgs << "Depth Threshold:    " << m_depth_thresh << " meters\n";
+  m_msgs << "Current Depth:      " << m_current_depth << " meters\n";
+ // m_msgs << "Total Distance Traveled: " << m_total_distance << " meters" << endl;
 
   // ACTable actab(4);
   // actab << "Alpha | Bravo | Charlie | Delta";
