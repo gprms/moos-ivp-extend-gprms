@@ -1,0 +1,30 @@
+//--------------------------------------------------
+// pLogger Configuration Block (Created from Plugin)
+
+ProcessConfig = pLogger
+{
+  AppTick 	= 10
+  CommsTick 	= 10
+  
+  File		= LOG_%(VNAME)
+  PATH		= ./
+  AsyncLog 	= false
+  FileTimeStamp = true
+
+  // Log it all!!!!!
+  LogAuxSrc       = true
+  WildCardLogging = true 
+
+  WildCardOmitPattern = *_STATUS
+
+  // Pre-register for the one-shot bursts so the logger does not miss them
+  // while it is still discovering variables on DB_VAR_SUMMARY (Lab 7 3.6.2).
+  Log = VISIT_POINT        @ 0 nosync
+  Log = VISIT_POINT_HENRY  @ 0 nosync
+  Log = VISIT_POINT_GILDA  @ 0 nosync
+  Log = VIEW_POINT         @ 0 nosync
+  Log = VIEW_SEGLIST       @ 0 nosync
+  Log = WPT_UPDATES        @ 0 nosync
+
+  CompressAlogs = false
+}

@@ -1,0 +1,11 @@
+run,mode,view_points,henry_assigned,gilda_assigned,henry_recv,gilda_recv,henry_route_v,gilda_route_v,henry_moved,gilda_moved,result
+1,alt,398,50,50,50,50,50,50,1,1,PASS
+2,alt,415,50,50,50,50,50,50,1,1,PASS
+3,alt,487,50,50,50,50,50,50,1,1,PASS
+4,alt,248,50,50,50,50,50,50,1,1,PASS
+5,alt,473,50,50,50,50,50,50,1,1,PASS
+1,region,100,45,55,45,55,45,55,0,0,PASS
+2,region,516,50,50,50,50,50,50,1,1,PASS
+3,region,169,52,48,52,48,52,48,1,0,PASS
+4,region,100,60,40,60,40,60,40,0,0,PASS
+5,region,144,47,53,47,53,47,53,1,1,PASS
