@@ -65,7 +65,7 @@ bool GenRescue::OnNewMail(MOOSMSG_LIST &NewMail)
     bool handled = true;
     if(key == "SWIMMER_ALERT")
       handled = handleMailNewSwimmer(sval);
-    else if(key == "FOUND_SWIMMER")
+    else if((key == "FOUND_SWIMMER") || (key == "RESCUED_SWIMMER"))
       handled = handleMailFoundSwimmer(sval);
     else if(key == "NAV_X") {
       m_nav_x = msg.GetDouble();
@@ -151,7 +151,8 @@ void GenRescue::RegisterVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("SWIMMER_ALERT", 0);
-  Register("FOUND_SWIMMER", 0);
+  Register("FOUND_SWIMMER", 0);    // deprecated by uFldRescueMgr but still posted
+  Register("RESCUED_SWIMMER", 0);  // current rescue-confirmation variable
   Register("NAV_X", 0);
   Register("NAV_Y", 0);
 }
