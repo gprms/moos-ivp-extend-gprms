@@ -1,0 +1,205 @@
+ServerHost = localhost
+ServerPort = $(MOOS_PORT)
+Community  = $(VNAME)
+
+#include plugs.moos <origin_warp>
+  
+//------------------------------------------------------------
+Processconfig = ANTLER
+{
+  MSBetweenLaunches = 100
+   
+  Run = MOOSDB           @ NewConsole = false
+  Run = uProcessWatch    @ NewConsole = false
+  Run = pShare           @ NewConsole = false
+  Run = uSimMarineV22    @ NewConsole = false
+  Run = pLogger          @ NewConsole = false
+  Run = pNodeReporter    @ NewConsole = false
+  Run = pMarinePIDV22    @ NewConsole = false
+  Run = pHelmIvP         @ NewConsole = false
+  Run = pHostInfo        @ NewConsole = false
+  Run = uFldNodeBroker   @ NewConsole = false
+  Run = pRealm           @ NewConsole = false
+  Run = uFldMessageHandler @  NewConsole = false
+  Run = uTimerScript @ NewConsole = false
+  Run = uTimerScript @ NewConsole = false ~uTimerScriptWatchDog
+}
+
+#include plugs.moos <pShare>
+#include plugs.moos <pHostInfo>
+#include plugs.moos <uProcessWatch>
+
+//--------------------------------------------------
+// uFldNodeBroker config block 
+
+ProcessConfig = uFldNodeBroker
+{
+  AppTick   = 1
+  CommsTick = 1
+
+  try_shore_host = pshare_route=$(SHORE_IP):$(SHORE_PSHARE)
+
+  bridge = src=VIEW_POLYGON
+  bridge = src=VIEW_POINT
+  bridge = src=VIEW_SEGLIST
+  bridge = src=APPCAST
+  bridge = src=NODE_REPORT_LOCAL,  alias=NODE_REPORT
+  bridge = src=NODE_MESSAGE_LOCAL, alias=NODE_MESSAGE
+}
+
+//------------------------------------------------------
+// uSimMarineV22 Config Block
+
+ProcessConfig = uSimMarineV22
+{
+  AppTick   = 10
+  CommsTick = 10
+
+  start_pos = $(START_POS),speed=0
+  prefix    = NAV
+
+	turn_rate = 80
+	
+  //rotate_speed = 0.012
+  //drift_x      = 0.0045
+
+  //thrust_map = -100:-2, 0:0, 20:1, 40:2, 60:3, 80:5, 100:5
+}
+
+//----------------------------------------------------
+// pHelmIvP config block
+
+ProcessConfig = pHelmIvP
+{
+  AppTick    = 4
+  CommsTick  = 4
+  
+  behaviors    = targ_$(VNAME).bhv  
+  verbose      = false
+  Domain       = course:0:359:360
+  Domain       = speed:0:5:26
+}
+
+//-----------------------------------------------------
+// pMarinePIDV22 config block
+
+ProcessConfig = pMarinePIDV22
+{
+  AppTick    = 10
+  CommsTick  = 10
+  
+  verbose       = true
+  depth_control = false
+  active_start  = true
+  
+  // Yaw PID controller
+  yaw_pid_kp             = 1.4
+  yaw_pid_kd             = 0.1
+  yaw_pid_ki             = 0.0
+  yaw_pid_integral_limit = 0.07
+  
+  // Speed PID controller
+  speed_pid_kp           = 1.0
+  speed_pid_kd           = 0.0
+  speed_pid_ki           = 0.0
+  speed_pid_integral_limit = 0.07
+  
+  // Maximums
+  maxrudder  = 100
+  maxthrust  = 100
+  
+  // A non-zero SPEED_FACTOR overrides use of SPEED_PID
+  // Will set DESIRED_THRUST = DESIRED_SPEED * SPEED_FACTOR
+  speed_factor = 20
+}
+
+//--------------------------------------------------------
+// pNodeReporter config block
+
+ProcessConfig = pNodeReporter
+{
+  AppTick     = 2
+  CommsTick   = 2
+  
+  vessel_type = KAYAK
+}
+
+//--------------------------------------------------
+// pLogger config block
+
+ProcessConfig = pLogger
+{
+  AppTick 	= 5
+  CommsTick 	= 5
+  
+  File		= LOG_%(VNAME)
+  PATH		= ./
+  AsyncLog 	= true
+  FileTimeStamp = true
+
+  // Log it all!!!!!
+  LogAuxSrc = true
+  WildCardLogging = true 
+}
+	
+  ProcessConfig = uFldMessageHandler
+  {
+    AppTick    = 2
+    CommsTick  = 2
+
+    strict_addressing = false
+
+    // RECOVER: every incoming peer message posts a comms "heartbeat".
+    // This flag is what the comms watchdog (below) listens for to know
+    // the link to our partner is still alive.
+    msg_flag = COMMS_OK = true
+  }
+ProcessConfig = uTimerScript
+ {
+   AppTick    = 2
+   CommsTick  = 2
+
+   condition  = DEPLOY=true
+   randvar    = varname=YPOS, min=-125, max=0, key=at_reset
+
+   // THE BELOW EVENT ALL ON ONE LINE IN THE ACTUAL MOOS FILE
+
+   event      = var=NODE_MESSAGE_LOCAL, val="src_node=$(VNAME),dest_node=all,var_name=UP_LOITER,string_val=ycenter_assign=$[YPOS]",
+   time=60:90
+   reset_max = nolimit
+   reset_time = all-posted
+ }
+
+//----------------------------------------------------------
+// uTimerScript config block  --  COMMS RECOVERY WATCHDOG
+//
+// DETECT : Each incoming peer message sets COMMS_OK=true (the msg_flag
+//          configured in uFldMessageHandler). That post resets this
+//          watchdog back to zero. If COMMS_OK is NOT seen within the
+//          timeout (longer than the 60-90s peer-message cadence), we
+//          conclude the link is dead.
+// RECOVER: On timeout, pull our OWN loiter center back to a neutral
+//          central y (mid of the -125..0 reassign range) via the same
+//          UP_LOITER/ycenter_assign machinery already in the mission.
+//          From the field center the loiter-orbit swings bring the two
+//          vehicles back within comms_range, the partner's next message
+//          arrives, COMMS_OK fires, and the watchdog re-arms.
+//          No new MOOS app required.
+ProcessConfig = uTimerScriptWatchDog
+{
+  AppTick    = 2
+  CommsTick  = 2
+
+  script_name = comms_watchdog
+  condition   = DEPLOY = true
+
+  // Heartbeat: any received peer message resets the countdown.
+  reset_var   = COMMS_OK
+  reset_max   = nolimit
+  reset_time  = all-posted
+
+  // Timeout (s) must exceed the peer-message cadence (60:90) so the
+  // watchdog never fires while the link is healthy.
+  event = var=COMMS_LOST, val=true,                   time=110
+  event = var=UP_LOITER,  val="ycenter_assign=-62",   time=110
+}
