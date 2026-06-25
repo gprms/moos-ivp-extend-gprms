@@ -72,6 +72,17 @@ void showExampleConfigAndExit()
   cout << "{                                                  " << endl;
   cout << "  AppTick   = 4                                    " << endl;
   cout << "  CommsTick = 4                                    " << endl;
+  cout << "                                                   " << endl;
+  cout << "  // Path heuristic (sec 5.1): greedy | lookahead2 " << endl;
+  cout << "  heuristic_type = greedy                          " << endl;
+  cout << "                                                   " << endl;
+  cout << "  // Adversary conceding (sec 5.2)                 " << endl;
+  cout << "  concede             = false  // master on/off    " << endl;
+  cout << "  concede_radius      = 15     // yield within m   " << endl;
+  cout << "  concede_ahead_range = 0      // heading rule, m  " << endl;
+  cout << "  concede_ahead_angle = 30     // half-cone, deg   " << endl;
+  cout << "  concede_max         = 0      // 0 = no cap       " << endl;
+  cout << "  concede_replan_dist = 5      // replan trigger, m" << endl;
   cout << "}                                                  " << endl;
 }
 
